@@ -1,0 +1,19 @@
+#!/usr/bin/env ruby
+
+decoder = %q[class HAX; def self.method_missing(m, *args); m = m.to_s; TOPLEVEL_BINDING.eval $c.join if m == '-@'; m.scan(/(\w)(\w)/).each { |t| ($c ||= []) << (((t[0][0].ord - 97) * 26) + (t[1][0].ord - 97)).chr }; end; end]
+
+puts "#!/usr/bin/env ruby"
+puts decoder
+bl = [""]
+$stdin.each { |line|
+  line.sub!(/^\s+/, '')
+  line.each_byte { |b|
+    b = b.to_i
+    bl.push("") if bl.empty? or bl[-1].size > 75
+    bl[-1] += (b / 26 + 97).chr + (b % 26 + 97).chr
+  }
+}
+bl.each { |l|
+  puts "HAX.#{l}"
+}
+puts "-HAX"
