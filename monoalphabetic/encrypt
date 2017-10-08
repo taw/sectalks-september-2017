@@ -1,0 +1,12 @@
+#!/usr/bin/env ruby
+
+plaintext = open("#{__dir__}/plaintext.txt").read
+key = open("#{__dir__}/key.txt").read.chomp
+
+raise "Bad key" unless key.size == 26 and key.chars.sort == [*"a".."z"]
+
+plaintext = plaintext.downcase.gsub(/[^a-z]/, "")
+
+open("#{__dir__}/ciphertext.txt", "w") do |fh|
+  fh.puts plaintext.tr("a-z", key)
+end

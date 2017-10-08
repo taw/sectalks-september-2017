@@ -1,0 +1,8 @@
+#!/usr/bin/env ruby
+
+ciphertext = open("#{__dir__}/ciphertext.txt").read
+key = open("#{__dir__}/key.txt").read.chomp
+
+raise "Bad key" unless key.size == 26 and key.chars.sort == [*"a".."z"]
+
+puts ciphertext.tr(key, "a-z")

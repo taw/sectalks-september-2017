@@ -1,0 +1,12 @@
+#!/usr/bin/env ruby
+
+require "hash-polyfill"
+
+ciphertext = open("#{__dir__}/ciphertext.txt").read.chomp
+key = open("#{__dir__}/key.txt").read.chomp
+
+char_counts = ciphertext.chars.group_by(&:itself).transform_values(&:count)
+char_counts.sort_by(&:last).reverse.each do |char, count|
+  actual = char.tr(key, "a-z")
+  puts "#{char} - #{count} [#{actual}]"
+end
