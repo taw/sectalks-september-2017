@@ -1,0 +1,41 @@
+#!/usr/bin/env ruby
+
+def generate_code(key)
+  sz = key.size
+  output = ""
+
+  checks = []
+  key.chars.each_with_index do |c, i|
+    ofs = rand(200) - 100
+    sum = c.ord + ofs
+    checks << (
+      "    if ord(key[#{i}]) + #{ofs} != #{sum}:\n"+
+      "        return False\n"
+    ).gsub("+ -", "- ")
+  end
+
+  output << %Q[#!/usr/bin/env python\n]
+  output << %Q[\n]
+  output << %Q[import sys\n]
+  output << %Q[\n]
+  output << %Q[def validate(key):\n]
+  output << %Q[    if len(key) != #{sz}:\n]
+  output << %Q[        return False\n]
+  output += checks.shuffle.join
+  output << %Q[    return True\n]
+  output << %Q[\n]
+  output << %Q[if len(sys.argv) != 2:\n]
+  output << %Q[    print("Please specify password to test as argument")\n]
+  output << %Q[elif validate(sys.argv[1]):\n]
+  output << %Q[    print("Correct password")\n]
+  output << %Q[else:\n]
+  output << %Q[    print("Incorrect password")\n]
+end
+
+if ARGV.size == 1
+  key = ARGV[0]
+  puts generate_code(key)
+else
+  STDERR.puts "Usage: #{$0} key"
+  exit 1
+end
