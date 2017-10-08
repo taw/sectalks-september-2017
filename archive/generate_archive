@@ -1,0 +1,47 @@
+#!/usr/bin/env ruby
+
+require "pathname"
+
+def create_zip(files)
+  system "trash", "tmp" if Pathname("tmp").exist?
+  Pathname("tmp").mkpath
+  files.each do |name, content|
+    Pathname("tmp/#{name}").write(content)
+  end
+  Dir.chdir("tmp") do
+    system "7za", "a", "output.7z", *files.keys
+  end
+  Pathname("tmp/output.7z").open("rb", &:read)
+end
+
+def generate_archive(real, fake)
+  real += "\n" * (4096 - real.size)
+  fake += "\n" * (4096 - fake.size)
+
+  expanded = 4096
+
+  16.times do |j|
+    extname = j == 0 ? "txt" : "7z"
+    real_files = (0..15).map{|i| "%x.#{extname}" % i}.zip(([real] + [fake] * 15).shuffle).to_h
+    fake_files = (0..15).map{|i| "%x.#{extname}" % i}.zip([fake] * 16).to_h
+    real = create_zip(real_files)
+    fake = create_zip(fake_files)
+    expanded *= 16
+  end
+
+  open("archive.7z", "wb") do |fh|
+    fh.write real
+  end
+
+  puts "Expanded size: #{expanded}"
+  puts "Compressed size: #{real.size}"
+  puts "Ratio: #{expanded / real.size}"
+end
+
+if ARGV.size == 1
+  message = ARGV[0]
+  generate_archive(message, "There is no answer here :-(")
+else
+  STDERR.puts "Usage: #{$0} message"
+  exit 1
+end
