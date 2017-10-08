@@ -1,0 +1,32 @@
+#!/usr/bin/env ruby
+
+def generate_code(key)
+  sz = key.size
+  output = ""
+
+  checks = []
+  key.chars.each_with_index do |c, i|
+    checks << %Q[  return if substr($key, #{i}, 1) ne #{c.inspect};\n]
+  end
+
+  output << %Q[sub validate {\n]
+  output << %Q[  my $key = $ARGV[0];\n]
+  output << %Q[  return if length$key ne "#{sz}";\n]
+  output += checks.shuffle.join
+  output << %Q[  1\n]
+  output << %Q[}\n]
+  output << %Q[\n]
+  output << %Q[if(@ARGV != 1) {\n]
+  output << %Q[  print("Please specify password to test as argument\\n");\n]
+  output << %Q[} else {\n]
+  output << %Q[  print(validate() ? "Correct!\\n" : "Incorrect!\\n");\n]
+  output << %Q[}\n]
+end
+
+if ARGV.size == 1
+  key = ARGV[0]
+  puts generate_code(key)
+else
+  STDERR.puts "Usage: #{$0} key"
+  exit 1
+end
