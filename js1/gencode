@@ -1,0 +1,23 @@
+#!/usr/bin/env ruby
+
+def generate_js_code(pass)
+  checks = []
+  pass.chars.each_with_index do |c,i|
+    checks << "checksum += Math.pow(password.charCodeAt(#{i}) - #{c.ord}, 2)"
+  end
+
+  output = []
+  output << "function validate(password) {"
+  output << "var checksum = password.length"
+  output += checks.shuffle
+  output << "return checksum === #{pass.length}"
+  output << "}"
+end
+
+if ARGV.size == 1
+  key = ARGV[0]
+  puts generate_js_code(key)
+else
+  STDERR.puts "Usage: #{$0} key"
+  exit 1
+end
