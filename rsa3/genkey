@@ -1,0 +1,45 @@
+#!/usr/bin/env ruby
+
+require "openssl"
+require "json"
+
+def extended_gcd(a, b)
+  return [0,1] if a % b == 0
+  x, y = extended_gcd(b, a % b)
+  [y, x - y * (a / b)]
+end
+
+def coprime?(a, b)
+  a.gcd(b) == 1
+end
+
+# Calculate the multiplicative inverse d with d * e = 1 (mod φ(p,q)),
+# using the extended euclidian algorithm.
+def get_d(e, phi)
+  x, _ = extended_gcd(e, phi)
+  x += phi if x < 0
+  x
+end
+
+def generate_key
+  bits = 1024
+  p = OpenSSL::BN.generate_prime(bits).to_i
+  q = OpenSSL::BN.generate_prime(bits).to_i
+  phi = (p-1) * (q-1)
+  n = p * q
+  e = 3
+  # What's the chance? No idea
+  raise "Not coprime" unless coprime?(e, phi)
+  d = get_d(e, phi)
+  [n, p, q, d, e]
+end
+
+(1..3).each do |i|
+  n, p, q, d, e = generate_key
+  open("#{__dir__}/private_key#{i}.txt", "w") do |fh|
+    fh.puts "p=#{p}", "q=#{q}", "e=#{e}", "d=#{d}"
+  end
+  open("#{__dir__}/public_key#{i}.txt", "w") do |fh|
+    fh.puts "n=#{n}", "e=#{e}"
+  end
+end

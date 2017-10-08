@@ -1,0 +1,15 @@
+#!/usr/bin/env ruby
+
+require_relative "rsa"
+
+(1..3).each do |i|
+  ciphertext = open("#{__dir__}/ciphertext#{i}.txt").read
+  key = open("#{__dir__}/private_key#{i}.txt").read
+  p = key[/p=\K\d+/].to_i
+  q = key[/q=\K\d+/].to_i
+  d = key[/d=\K\d+/].to_i
+  n = p*q
+  ciphertext_n = ciphertext.to_i
+  plaintext = RSA.decrypt(ciphertext_n, n, d)
+  puts plaintext
+end

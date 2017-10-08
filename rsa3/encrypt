@@ -1,0 +1,20 @@
+#!/usr/bin/env ruby
+
+require_relative "rsa"
+
+plaintext = open("#{__dir__}/plaintext.txt").read
+plaintext_n = RSA.s_to_n(plaintext)
+
+(1..3).each do |i|
+  key = open("#{__dir__}/public_key#{i}.txt").read
+  n = key[/n=\K\d+/].to_i
+  e = key[/e=\K\d+/].to_i
+
+  raise "Plaintext too long" unless plaintext_n.size < n.size
+
+  ciphertext_n = RSA.encrypt(plaintext, n, e)
+
+  open("#{__dir__}/ciphertext#{i}.txt", "w") do |fh|
+    fh.puts ciphertext_n
+  end
+end
