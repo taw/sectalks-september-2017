@@ -1,0 +1,35 @@
+#!/usr/bin/env ruby
+
+def generate_js_code(password)
+  sz = password.size
+  phase1 = []
+  phase2 = []
+  phase3 = []
+
+  password.chars.each_with_index do |c,i|
+    ofs = rand(200) - 100
+    phase1 << "var a#{i} = password.charCodeAt(#{i})"
+    phase2 << "var b#{i} = a#{i} + #{ofs}".sub("+ -", "- ")
+    phase3 << "var c#{i} = b#{i} + #{- c.ord - ofs + 1}".sub("+ -", "- ")
+  end
+
+  phase4 = (0...sz).to_a.shuffle.map{|i| "c#{i}"}.join("*")
+  phase5 = (0...sz).to_a.shuffle.map{|i| "c#{i}"}.join("+")
+
+  output = []
+  output << "function validate() {"
+  output << "var password = document.getElementById('password').value"
+  output += phase1.shuffle
+  output += phase2.shuffle
+  output += phase3.shuffle
+  output << "if(password.length == #{password.size} && #{phase4} == 1 && #{phase5} == #{password.size}) { alert('Great Success!') } else { document.location.href='https://www.youtube.com/watch?v=oHg5SJYRHA0' }"
+  output << "}"
+end
+
+if ARGV.size == 1
+  key = ARGV[0]
+  puts generate_js_code(key)
+else
+  STDERR.puts "Usage: #{$0} key"
+  exit 1
+end
